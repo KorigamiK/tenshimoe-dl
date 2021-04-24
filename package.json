@@ -29,12 +29,9 @@
   "@types/node": "^14.0.4",
   "dependencies": {
     "@types/node-fetch": "^2.5.10",
-    "axios": "^0.21.1",
-    "chalk": "^2.4.2",
     "cheerio": "*",
     "dotenv": "^8.2.0",
     "node-fetch": "^2.6.1",
-    "prompt-sync": "^4.2.0",
-    "table": "^6.5.1"
+    "prompt-sync": "^4.2.0"
   }
 }

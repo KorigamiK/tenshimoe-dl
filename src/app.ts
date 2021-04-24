@@ -36,16 +36,32 @@ const search = async (query: string): Promise<interfaces.search_results> => {
     return data
 }
 
-const get_eps = async (link: string): Promise<interfaces.episodes> => {
+const get_eps = async (link: string, _get_other_pages: boolean=true): Promise<interfaces.episodes> => {
     const html = await (await fetch(link, { "method": "get" })).text()
     const $ = cheerio.load(html)
     let ep_list = []
     $('a').each((index, ele) => {
-        if (ele.attribs.href.startsWith(link) && ele.attribs.title) {
+        if (ele.attribs.href.startsWith(link.split('?')[0]) && ele.attribs.title) {
             ep_list.push(JSON.parse(JSON.stringify(ele.attribs)))
         }
     })
-    return ep_list
+    // console.log(ep_list.length)
+    let more_links = []
+    if (_get_other_pages) {
+        let pages = new Set()
+        $('.page-link').each((index, ele) => {
+            if (ele.attribs.href) {pages.add(ele.attribs.href)}
+        })
+        let tasks = []
+        // console.log(pages)
+        pages.forEach((url: string) => {
+            tasks.push(get_eps(url, _get_other_pages=false))
+        })
+        const more_links_list = await Promise.all(tasks)
+        more_links_list.forEach(ele => more_links.concat(ele))
+    }
+
+    return ep_list.concat(more_links)
 }
 
 const get_downloads = async (ep_link: string): Promise<interfaces.downloads> => {
@@ -94,4 +110,4 @@ const search_and_downlaod = async () => {
 }
 
 (async () => console.log(await search_and_downlaod()))();
-// (async () => console.log((await search('nagatoro'))))()
+// (async () => await get_eps('https://tenshi.moe/anime/kjfrhu3s'))()

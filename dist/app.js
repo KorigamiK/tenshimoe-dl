@@ -46,16 +46,33 @@ const search = (query) => __awaiter(void 0, void 0, void 0, function* () {
     })).json();
     return data;
 });
-const get_eps = (link) => __awaiter(void 0, void 0, void 0, function* () {
+const get_eps = (link, _get_other_pages = true) => __awaiter(void 0, void 0, void 0, function* () {
     const html = yield (yield node_fetch_1.default(link, { "method": "get" })).text();
     const $ = cheerio_1.default.load(html);
     let ep_list = [];
     $('a').each((index, ele) => {
-        if (ele.attribs.href.startsWith(link) && ele.attribs.title) {
+        if (ele.attribs.href.startsWith(link.split('?')[0]) && ele.attribs.title) {
             ep_list.push(JSON.parse(JSON.stringify(ele.attribs)));
         }
     });
-    return ep_list;
+    // console.log(ep_list.length)
+    let more_links = [];
+    if (_get_other_pages) {
+        let pages = new Set();
+        $('.page-link').each((index, ele) => {
+            if (ele.attribs.href) {
+                pages.add(ele.attribs.href);
+            }
+        });
+        let tasks = [];
+        // console.log(pages)
+        pages.forEach((url) => {
+            tasks.push(get_eps(url, _get_other_pages = false));
+        });
+        const more_links_list = yield Promise.all(tasks);
+        more_links_list.forEach(ele => more_links.concat(ele));
+    }
+    return ep_list.concat(more_links);
 });
 const get_downloads = (ep_link) => __awaiter(void 0, void 0, void 0, function* () {
     const html = yield (yield node_fetch_1.default(ep_link, { "method": "get" })).text();
@@ -99,5 +116,5 @@ const search_and_downlaod = () => __awaiter(void 0, void 0, void 0, function* ()
     return `Got ${links.length} links`;
 });
 (() => __awaiter(void 0, void 0, void 0, function* () { return console.log(yield search_and_downlaod()); }))();
-// (async () => console.log((await search('nagatoro'))))()
+// (async () => await get_eps('https://tenshi.moe/anime/kjfrhu3s'))()
 //# sourceMappingURL=app.js.map
