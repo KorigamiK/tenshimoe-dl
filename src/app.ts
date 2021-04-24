@@ -90,6 +90,7 @@ const search_and_downlaod = async () => {
     const needed = tabulate(results)
     const links = await download_all(needed.url)
     console.log(links)
+    return `Got ${links.length} links`
 }
 
 (async () => console.log(await search_and_downlaod()))();

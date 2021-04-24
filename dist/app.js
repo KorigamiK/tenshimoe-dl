@@ -96,6 +96,7 @@ const search_and_downlaod = () => __awaiter(void 0, void 0, void 0, function* ()
     const needed = tabulate(results);
     const links = yield download_all(needed.url);
     console.log(links);
+    return `Got ${links.length} links`;
 });
 (() => __awaiter(void 0, void 0, void 0, function* () { return console.log(yield search_and_downlaod()); }))();
 // (async () => console.log((await search('nagatoro'))))()
