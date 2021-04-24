@@ -1,0 +1,40 @@
+{
+  "name": "tenshimoe-dl",
+  "version": "1.0.0",
+  "description": "a nice async scraper for tenshi.moe",
+  "main": "dist/app.js",
+  "scripts": {
+    "test": "echo \\\"Error: no test specified\\\" && exit 1",
+    "start": "node dist/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "tenshimoe-dl"
+  },
+  "keywords": [
+    "tenshi",
+    "anime",
+    "downloader",
+    "typescript",
+    "node",
+    "js",
+    "scraper"
+  ],
+  "author": "korigamik",
+  "license": "ISC",
+  "devDependencies": {
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.3"
+  },
+  "@types/node": "^14.0.4",
+  "dependencies": {
+    "@types/node-fetch": "^2.5.10",
+    "axios": "^0.21.1",
+    "chalk": "^2.4.2",
+    "cheerio": "*",
+    "dotenv": "^8.2.0",
+    "node-fetch": "^2.6.1",
+    "prompt-sync": "^4.2.0",
+    "table": "^6.5.1"
+  }
+}
