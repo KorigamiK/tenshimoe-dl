@@ -21,7 +21,7 @@ dotenv_1.default.config();
 const api_url = "https://tenshi.moe/anime/search";
 const tabulate = (data, option = null) => {
     let list = [];
-    if (option) {
+    if (option !== null) {
         console.log(data[option].title);
         return data[option];
     }
@@ -73,12 +73,12 @@ const get_eps = (link, _get_other_pages = true) => __awaiter(void 0, void 0, voi
         let tasks = [];
         // console.log(pages)
         pages.forEach((url) => {
-            tasks.push(get_eps(url, _get_other_pages = false));
+            tasks.push(get_eps(url, false));
         });
         const more_links_list = yield Promise.all(tasks);
-        more_links_list.forEach(ele => more_links.concat(ele));
+        more_links_list.forEach(ele => { more_links = [...more_links, ...ele]; });
     }
-    return ep_list.concat(more_links);
+    return [...ep_list, ...more_links];
 });
 const get_downloads = (ep_link) => __awaiter(void 0, void 0, void 0, function* () {
     const html = yield (yield node_fetch_1.default(ep_link, { "method": "get" })).text();
@@ -116,7 +116,6 @@ const download_all = (anime_link, start = undefined, end = undefined, quality = 
         tasks.push(download_one(ele.href, ele.title, quality));
         // console.log(ele.href, ele.title, quality)
     });
-    // console.log(eps.slice(start, end))
     const results = yield Promise.all(tasks);
     return results;
 });
@@ -129,7 +128,7 @@ const search_and_downlaod = (query = null, option = null, start_ep = undefined, 
 });
 exports.search_and_downlaod = search_and_downlaod;
 if (require.main === module) {
-    (() => __awaiter(void 0, void 0, void 0, function* () { return console.log(yield exports.search_and_downlaod('attack', 3, 2, 3, undefined)); }))();
+    (() => __awaiter(void 0, void 0, void 0, function* () { return console.log(yield exports.search_and_downlaod('naruto', 0, 200, 202, undefined)); }))();
     // (async () => await get_eps('https://tenshi.moe/anime/kjfrhu3s'))()
 }
 //# sourceMappingURL=app.js.map

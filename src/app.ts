@@ -10,7 +10,7 @@ const api_url = "https://tenshi.moe/anime/search"
 
 const tabulate = (data: interfaces.search_results, option=null): interfaces.search_result => {
     let list = []
-    if (option) {console.log(data[option].title); return data[option]}
+    if (option !== null) {console.log(data[option].title); return data[option]}
     data.forEach(element => {
         let e = {}
         for (const attr in element){
@@ -57,13 +57,12 @@ const get_eps = async (link: string, _get_other_pages: boolean=true): Promise<in
         let tasks = []
         // console.log(pages)
         pages.forEach((url: string) => {
-            tasks.push(get_eps(url, _get_other_pages=false))
+            tasks.push(get_eps(url, false))
         })
         const more_links_list = await Promise.all(tasks)
-        more_links_list.forEach(ele => more_links.concat(ele))
+        more_links_list.forEach(ele => {more_links = [...more_links, ...ele]})
     }
-
-    return ep_list.concat(more_links)
+    return [...ep_list, ...more_links]
 }
 
 const get_downloads = async (ep_link: string): Promise<interfaces.downloads> => {
@@ -104,7 +103,6 @@ const download_all = async (anime_link: string, start=undefined, end=undefined, 
         tasks.push(download_one(ele.href, ele.title, quality))
         // console.log(ele.href, ele.title, quality)
     })
-    // console.log(eps.slice(start, end))
     const results = await Promise.all(tasks)
     return results 
 }
@@ -112,13 +110,13 @@ const download_all = async (anime_link: string, start=undefined, end=undefined, 
 export const search_and_downlaod = async (query=null, option=null, start_ep=undefined, end_ep=undefined, quality=undefined) => {
     const results = await search(query ? query : prompt('Enter anime name: '))
     const needed = tabulate(results, option)
-    const links = await download_all(needed.url, start_ep, end_ep, quality)
+    const links: any = await download_all(needed.url, start_ep, end_ep, quality)
     console.log(links)
     return `Got ${links.length} links`
 }
 
 if (require.main === module) {
-    (async () => console.log(await search_and_downlaod('attack', 3, 2, 3, undefined)))();
+    (async () => console.log(await search_and_downlaod('naruto', 0, 200, 202, undefined)))();
     // (async () => await get_eps('https://tenshi.moe/anime/kjfrhu3s'))()
 }
 
