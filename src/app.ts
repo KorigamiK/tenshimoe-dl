@@ -8,8 +8,9 @@ dotenv.config();
 
 const api_url = "https://tenshi.moe/anime/search"
 
-const tabulate = (data: interfaces.search_results): interfaces.search_result => {
+const tabulate = (data: interfaces.search_results, option=null): interfaces.search_result => {
     let list = []
+    if (option) {console.log(data[option].title); return data[option]}
     data.forEach(element => {
         let e = {}
         for (const attr in element){
@@ -18,7 +19,8 @@ const tabulate = (data: interfaces.search_results): interfaces.search_result => 
         list.push(e)
     });
     console.table(list)
-    let ans = Number(prompt('Enter index: '))
+    let ans = option ? option : Number(prompt('Enter index: '))
+    console.log(data[ans].title)
     return data[ans]
 }
 
@@ -78,9 +80,10 @@ const get_downloads = async (ep_link: string): Promise<interfaces.downloads> => 
     return dow_list
 }
 
-const download_one = async (episode_link: string, quality: string=process.env.quality) => {
+const download_one = async (episode_link: string, title: string, quality: string=process.env.quality) => {
     let final: string;
     // console.log(`starting ${episode_link.split('/').pop()}`);
+    quality = quality ? quality : process.env.quality;
     (await get_downloads(episode_link)).forEach(element => {
         if (element.quality === quality) {
             final = element.src
@@ -88,26 +91,34 @@ const download_one = async (episode_link: string, quality: string=process.env.qu
         }
     });
     // console.log(`done ${episode_link.split('/').pop()}`);
-    return final
+    let ret = {}
+    ret[title.replace('Watch', '').trim()] = final
+    return ret
 }
 
-const download_all = async (anime_link: string, quality: string= process.env.quality) => {
+const download_all = async (anime_link: string, start=undefined, end=undefined, quality: string= process.env.quality) => {
+    start = start > 0 ? start - 1 : -1
     const eps = await get_eps(anime_link)
     const tasks = []
-    eps.forEach(ele => {
-        tasks.push(download_one(ele.href, quality))
+    eps.slice(start, end).forEach(ele => {
+        tasks.push(download_one(ele.href, ele.title, quality))
+        // console.log(ele.href, ele.title, quality)
     })
+    // console.log(eps.slice(start, end))
     const results = await Promise.all(tasks)
     return results 
 }
 
-const search_and_downlaod = async () => {
-    const results = await search(prompt('Enter anime name: '))
-    const needed = tabulate(results)
-    const links = await download_all(needed.url)
+export const search_and_downlaod = async (query=null, option=null, start_ep=undefined, end_ep=undefined, quality=undefined) => {
+    const results = await search(query ? query : prompt('Enter anime name: '))
+    const needed = tabulate(results, option)
+    const links = await download_all(needed.url, start_ep, end_ep, quality)
     console.log(links)
     return `Got ${links.length} links`
 }
 
-(async () => console.log(await search_and_downlaod()))();
-// (async () => await get_eps('https://tenshi.moe/anime/kjfrhu3s'))()
+if (require.main === module) {
+    (async () => console.log(await search_and_downlaod('attack', 3, 2, 3, undefined)))();
+    // (async () => await get_eps('https://tenshi.moe/anime/kjfrhu3s'))()
+}
+

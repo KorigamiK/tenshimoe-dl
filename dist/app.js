@@ -12,14 +12,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.search_and_downlaod = void 0;
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cheerio_1 = __importDefault(require("cheerio"));
 const prompt = require('prompt-sync')();
 dotenv_1.default.config();
 const api_url = "https://tenshi.moe/anime/search";
-const tabulate = (data) => {
+const tabulate = (data, option = null) => {
     let list = [];
+    if (option) {
+        console.log(data[option].title);
+        return data[option];
+    }
     data.forEach(element => {
         let e = {};
         for (const attr in element) {
@@ -30,7 +35,8 @@ const tabulate = (data) => {
         list.push(e);
     });
     console.table(list);
-    let ans = Number(prompt('Enter index: '));
+    let ans = option ? option : Number(prompt('Enter index: '));
+    console.log(data[ans].title);
     return data[ans];
 };
 const search = (query) => __awaiter(void 0, void 0, void 0, function* () {
@@ -87,9 +93,10 @@ const get_downloads = (ep_link) => __awaiter(void 0, void 0, void 0, function* (
     });
     return dow_list;
 });
-const download_one = (episode_link, quality = process.env.quality) => __awaiter(void 0, void 0, void 0, function* () {
+const download_one = (episode_link, title, quality = process.env.quality) => __awaiter(void 0, void 0, void 0, function* () {
     let final;
     // console.log(`starting ${episode_link.split('/').pop()}`);
+    quality = quality ? quality : process.env.quality;
     (yield get_downloads(episode_link)).forEach(element => {
         if (element.quality === quality) {
             final = element.src;
@@ -97,24 +104,32 @@ const download_one = (episode_link, quality = process.env.quality) => __awaiter(
         }
     });
     // console.log(`done ${episode_link.split('/').pop()}`);
-    return final;
+    let ret = {};
+    ret[title.replace('Watch', '').trim()] = final;
+    return ret;
 });
-const download_all = (anime_link, quality = process.env.quality) => __awaiter(void 0, void 0, void 0, function* () {
+const download_all = (anime_link, start = undefined, end = undefined, quality = process.env.quality) => __awaiter(void 0, void 0, void 0, function* () {
+    start = start > 0 ? start - 1 : -1;
     const eps = yield get_eps(anime_link);
     const tasks = [];
-    eps.forEach(ele => {
-        tasks.push(download_one(ele.href, quality));
+    eps.slice(start, end).forEach(ele => {
+        tasks.push(download_one(ele.href, ele.title, quality));
+        // console.log(ele.href, ele.title, quality)
     });
+    // console.log(eps.slice(start, end))
     const results = yield Promise.all(tasks);
     return results;
 });
-const search_and_downlaod = () => __awaiter(void 0, void 0, void 0, function* () {
-    const results = yield search(prompt('Enter anime name: '));
-    const needed = tabulate(results);
-    const links = yield download_all(needed.url);
+const search_and_downlaod = (query = null, option = null, start_ep = undefined, end_ep = undefined, quality = undefined) => __awaiter(void 0, void 0, void 0, function* () {
+    const results = yield search(query ? query : prompt('Enter anime name: '));
+    const needed = tabulate(results, option);
+    const links = yield download_all(needed.url, start_ep, end_ep, quality);
     console.log(links);
     return `Got ${links.length} links`;
 });
-(() => __awaiter(void 0, void 0, void 0, function* () { return console.log(yield search_and_downlaod()); }))();
-// (async () => await get_eps('https://tenshi.moe/anime/kjfrhu3s'))()
+exports.search_and_downlaod = search_and_downlaod;
+if (require.main === module) {
+    (() => __awaiter(void 0, void 0, void 0, function* () { return console.log(yield exports.search_and_downlaod('attack', 3, 2, 3, undefined)); }))();
+    // (async () => await get_eps('https://tenshi.moe/anime/kjfrhu3s'))()
+}
 //# sourceMappingURL=app.js.map

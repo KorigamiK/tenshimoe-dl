@@ -23,6 +23,7 @@
   "author": "korigamik",
   "license": "ISC",
   "devDependencies": {
+    "@types/yargs": "^16.0.1",
     "tslint": "^5.12.1",
     "typescript": "^3.3.3"
   },
@@ -32,6 +33,7 @@
     "cheerio": "*",
     "dotenv": "^8.2.0",
     "node-fetch": "^2.6.1",
-    "prompt-sync": "^4.2.0"
+    "prompt-sync": "^4.2.0",
+    "yargs": "^16.2.0"
   }
 }
